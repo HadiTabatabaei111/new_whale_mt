@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Mother Whale Dashboard</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+    h1 { color: #333; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #eee; }
+    tr:nth-child(even) { background: #fafafa; }
+    #summary { margin-top: 10px; font-weight: bold; }
+    button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>🐋 Mother Whale Dashboard</h1>
+  <div id="summary">Loading summary...</div>
+
+  <table id="signalsTable">
+    <thead>
+      <tr>
+        <th>Symbol</th><th>Price</th><th>Direction</th>
+        <th>Status</th><th>TS</th><th>Reason</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadSummary() {
+      const res = await fetch('/api/validation_summary');
+      const data = await res.json();
+      document.getElementById('summary').innerHTML =
+        `Total: ${data.total_signals}, Accepted: ${data.accepted}, Rejected: ${data.rejected}`;
+    }
+
+    async function refreshSignals() {
+      const res = await fetch('/api/signals');
+      const data = await res.json();
+      const tbody = document.querySelector('#signalsTable tbody');
+      tbody.innerHTML = '';
+      for (const it of data.items) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${it.symbol}</td>
+          <td>${it.price}</td>
+          <td>${it.direction}</td>
+          <td>${it.status}</td>
+          <td>${it.ts}</td>
+          <td>${it.reason || ''}</td>
+          <td><button onclick="executeSignal('${it.id}')">Execute</button></td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    async function executeSignal(id) {
+      alert("Executing signal: " + id);
+      // اینجا می‌تونی درخواست واقعی به /api/execute بزنی
+    }
+
+    loadSummary();
+    refreshSignals();
+    setInterval(() => { loadSummary(); refreshSignals(); }, 5000);
+  </script>
+</body>
+</html>
